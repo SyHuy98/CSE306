@@ -35,6 +35,16 @@
   <artifactId>commons-io</artifactId>
   <version>2.6</version>
 </dependency>
+	<dependency>
+    <groupId>org.webjars.bower</groupId>
+    <artifactId>jplayer</artifactId>
+    <version>2.9.2</version>
+</dependency>
+	<dependency>
+    <groupId>javazoom</groupId>
+    <artifactId>jlayer</artifactId>
+    <version>1.0.1</version>
+</dependency>
   </dependencies>
   <build>
     <plugins>
