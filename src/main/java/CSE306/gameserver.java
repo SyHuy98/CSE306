@@ -4,23 +4,23 @@ import java.io.*;
 import java.net.*;
 
 public class gameserver {
-    private final static int PORT = 10;
-
     public static void main(String[] args) throws IOException {
-        try (ServerSocket server = new ServerSocket(PORT)) {
+        try (ServerSocket server = new ServerSocket(10)) {
             while (true) {
                 Socket connection = server.accept();
-                Teacher_TicTacToeServerThread serverThread = new Teacher_TicTacToeServerThread(connection);
+                ServerThread serverThread = new ServerThread(connection);
                 serverThread.start();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    static class Teacher_TicTacToeServerThread extends Thread {
+    static class ServerThread extends Thread {
 
         private Socket connection;
 
-        public Teacher_TicTacToeServerThread(Socket connection) {
+        public ServerThread(Socket connection) {
             this.connection = connection;
         }
 
@@ -33,20 +33,13 @@ public class gameserver {
                 Teacher_Board board = null;
                 board = getStrategy(board, in.readLine());
 
-                board.initialize();
+                board.setBoard(in.readLine());
 
                 while (true) {
                     String move = in.readLine();
 
-                    if (move.equals("left")) {
-                        board = new Teacher_BoardLeft();
-                        continue;
-                    } else if (move.equals("right")) {
-                        board = new Teacher_BoardRight();
-                        continue;
-                    }
-
                     if (move.equals("quit")) {
+                        this.connection.close();
                         break;
                     } else {
                         int cell = Character.getNumericValue(move.charAt(0));
@@ -59,46 +52,30 @@ public class gameserver {
                                         board.makeMove();
                                         if (board.checkStatus('x') == 0) {
                                             if (board.checkBoard() == 0) {
-                                                out.write(board.encodeBoard() + "\r\n");
+                                                out.write("200#" + board.encodeBoard() + "\r\n");
                                                 out.flush();
                                             } else {
-                                                out.write(board.encodeBoard() + " *** ");
-                                                out.write("It's a draw!" + " *** ");
-                                                out.write("Let's play again!" + " *** ");
-                                                out.write("Input your strategy: " + "\r\n");
+                                                out.write("201#" + board.encodeBoard() + "\r\n");
                                                 out.flush();
-                                                board.initialize();
                                             }
                                         } else {
-                                            out.write(board.encodeBoard() + " *** ");
-                                            out.write("I won!" + " *** ");
-                                            out.write("Let's play again!" + " *** ");
-                                            out.write("Input your strategy: " + "\r\n");
+                                            out.write("202#" + board.encodeBoard() + "\r\n");
                                             out.flush();
-                                            board.initialize();
                                         }
                                     } else {
-                                        out.write(board.encodeBoard() + " *** ");
-                                        out.write("It's a draw!" + " *** ");
-                                        out.write("Let's play again!" + " *** ");
-                                        out.write("Input your strategy: " + "\r\n");
+                                        out.write("201#" + board.encodeBoard() + "\r\n");
                                         out.flush();
-                                        board.initialize();
                                     }
                                 } else {
-                                    out.write(board.encodeBoard() + " *** ");
-                                    out.write("You won!" + " *** ");
-                                    out.write("Let's play again!" + " *** ");
-                                    out.write("Input your strategy: " + "\r\n");
+                                    out.write("203#" + board.encodeBoard() + "\r\n");
                                     out.flush();
-                                    board.initialize();
                                 }
                             } else {
-                                out.write("Occupied cell!" + "\r\n");
+                                out.write("204# " + "\r\n");
                                 out.flush();
                             }
                         } else {
-                            out.write("Wrong input!" + "\r\n");
+                            out.write("205# " + "\r\n");
                             out.flush();
                         }
                     }
@@ -109,10 +86,10 @@ public class gameserver {
             }
         }
 
-        private Teacher_Board getStrategy(Teacher_Board board, String move) {
-            if (move.equals("left")) {
+        private Teacher_Board getStrategy(Teacher_Board board, String strategy) {
+            if (strategy.equals("left")) {
                 board = new Teacher_BoardLeft();
-            } else if (move.equals("right")) {
+            } else if (strategy.equals("right")) {
                 board = new Teacher_BoardRight();
             }
             return board;
